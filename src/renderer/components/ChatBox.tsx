@@ -99,7 +99,7 @@ const ChatBox = () => {
             className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[70%] px-4 py-2 rounded-lg break-words ${
+              className={`max-w-[70%] px-4 py-2 rounded-lg wrap-break-words  whitespace-pre-wrap ${
                 m.role === 'user'
                   ? 'bg-blue-600 text-white rounded-br-none'
                   : 'bg-gray-200 text-gray-900 rounded-bl-none'
@@ -130,7 +130,13 @@ const ChatBox = () => {
           placeholder="Type your message..."
         />
 
-        {loading ? (
+        <button
+          onClick={sendMessage}
+          className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Send
+        </button>
+        {/* {loading ? (
           <button
             onClick={stopAssistant}
             className="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors"
@@ -144,7 +150,7 @@ const ChatBox = () => {
           >
             Send
           </button>
-        )}
+        )} */}
       </div>
     </div>
   );

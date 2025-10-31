@@ -1,11 +1,15 @@
-import { BrowserWindow } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { join } from 'node:path'
 
 import { createWindow } from 'lib/electron-app/factories/windows/create'
 import { ENVIRONMENT } from 'shared/constants'
 import { displayName } from '~/package.json'
+import { startOllama } from '~/src/main/ollamaManager' // import your manager
 
 export async function MainWindow() {
+  // Start Ollama server
+  startOllama()
+
   const window = createWindow({
     id: 'main',
     title: displayName,
@@ -29,7 +33,7 @@ export async function MainWindow() {
 
   window.webContents.on('did-finish-load', () => {
     if (ENVIRONMENT.IS_DEV) {
-      window.webContents.openDevTools({ mode: 'detach' })
+      // window.webContents.openDevTools({ mode: 'detach' })
     }
 
     window.show()
