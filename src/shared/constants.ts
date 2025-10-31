@@ -7,3 +7,9 @@ export const PLATFORM = {
   IS_WINDOWS: process.platform === 'win32',
   IS_LINUX: process.platform === 'linux',
 }
+
+const localOllamaEndpoint = "http://localhost:11434/api"
+export const chatEndpoint = `${localOllamaEndpoint}/chat`
+export const generateEndpoint = `${localOllamaEndpoint}/generate`
+export const pullModelEndpoint = `${localOllamaEndpoint}/pull`
+export const listModelsEndpoint = `${localOllamaEndpoint}/tags`

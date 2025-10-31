@@ -9,17 +9,21 @@ export async function MainWindow() {
   const window = createWindow({
     id: 'main',
     title: displayName,
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 700,
+    minWidth: 600,
+    minHeight: 400,
     show: false,
     center: true,
     movable: true,
-    resizable: false,
-    alwaysOnTop: true,
+    resizable: true,
+    alwaysOnTop: false,
     autoHideMenuBar: true,
-
+    frame: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   })
 
@@ -32,8 +36,9 @@ export async function MainWindow() {
   })
 
   window.on('close', () => {
-    for (const window of BrowserWindow.getAllWindows()) {
-      window.destroy()
+    // Cleanly destroy all windows on close
+    for (const win of BrowserWindow.getAllWindows()) {
+      win.destroy()
     }
   })
 

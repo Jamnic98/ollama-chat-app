@@ -12,8 +12,8 @@
   },
   "aliases": {
     "components": "renderer/components",
-    "utils": "renderer/utils",
     "ui": "renderer/components/ui",
+    "utils": "renderer/utils",
     "lib": "renderer/lib",
     "hooks": "renderer/hooks"
   },
