@@ -9,7 +9,7 @@ import { question } from '../utils/question'
 import { COLORS } from '../constants/colors'
 import { exec } from '../utils/exec'
 
-async function makeRelease() {
+const makeRelease = async () => {
   console.clear()
 
   const { version } = packageJSON

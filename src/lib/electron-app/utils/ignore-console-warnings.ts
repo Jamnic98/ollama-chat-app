@@ -1,4 +1,4 @@
-export function ignoreConsoleWarnings(warningsToIgnore: string[]) {
+export const ignoreConsoleWarnings = (warningsToIgnore: string[]) => {
   const originalEmitWarning = process.emitWarning
 
   process.emitWarning = (warning, ...args) => {

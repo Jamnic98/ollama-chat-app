@@ -2,11 +2,11 @@ import { ipcMain } from 'electron'
 
 import type { WindowCreationByIPC, BrowserWindowOrNull } from 'shared/types'
 
-export function registerWindowCreationByIPC({
+export const registerWindowCreationByIPC = ({
   channel,
   callback,
   window: createWindow,
-}: WindowCreationByIPC) {
+}: WindowCreationByIPC) => {
   let window: BrowserWindowOrNull
 
   ipcMain.handle(channel, event => {

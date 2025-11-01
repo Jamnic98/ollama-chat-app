@@ -4,6 +4,6 @@ import { Router } from 'lib/electron-router-dom'
 
 import { MainScreen } from './screens/main'
 
-export function AppRoutes() {
+export const AppRoutes = () => {
   return <Router main={<Route element={<MainScreen />} path="/" />} />
 }

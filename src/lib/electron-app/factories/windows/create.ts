@@ -5,7 +5,7 @@ import type { WindowProps } from 'shared/types'
 
 import { registerRoute } from 'lib/electron-router-dom'
 
-export function createWindow({ id, ...settings }: WindowProps) {
+export const createWindow = ({ id, ...settings }: WindowProps) => {
   const window = new BrowserWindow(settings)
 
   registerRoute({

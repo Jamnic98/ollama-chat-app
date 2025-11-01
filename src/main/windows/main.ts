@@ -1,12 +1,12 @@
-import { app, BrowserWindow } from 'electron'
+import { app } from 'electron'
 import { join } from 'node:path'
 
 import { createWindow } from 'lib/electron-app/factories/windows/create'
 import { ENVIRONMENT } from 'shared/constants'
 import { displayName } from '~/package.json'
-import { startOllama } from '~/src/main/ollamaManager' // import your manager
+import { startOllama, stopOllama } from '~/src/main/ollamaManager'
 
-export async function MainWindow() {
+export const MainWindow = async () => {
   // Start Ollama server
   startOllama()
 
@@ -33,18 +33,27 @@ export async function MainWindow() {
 
   window.webContents.on('did-finish-load', () => {
     if (ENVIRONMENT.IS_DEV) {
-      // window.webContents.openDevTools({ mode: 'detach' })
+      window.webContents.openDevTools({ mode: 'detach' })
     }
 
     window.show()
   })
 
-  window.on('close', () => {
-    // Cleanly destroy all windows on close
-    for (const win of BrowserWindow.getAllWindows()) {
-      win.destroy()
+  window.on('close', (e) => {
+    e.preventDefault();
+    console.log('[App] shutting down...');
+
+    try {
+      stopOllama();
+    } catch (err) {
+      console.error('Error stopping Ollama:', err);
     }
-  })
+
+    setTimeout(() => {
+      window.destroy();
+      app.quit();
+    }, 300);
+  });
 
   return window
 }

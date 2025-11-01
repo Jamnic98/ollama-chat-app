@@ -9,9 +9,9 @@ interface Options {
   inherit?: boolean
 }
 
-function makeOptions(
+const makeOptions = (
   options?: Options
-): Partial<ExecSyncOptionsWithStringEncoding> {
+): Partial<ExecSyncOptionsWithStringEncoding> => {
   return {
     stdio: options?.inherit ? 'inherit' : 'pipe',
     cwd: resolve(),
@@ -19,7 +19,7 @@ function makeOptions(
   }
 }
 
-export function exec(commands: string[], options?: Options) {
+export const exec = (commands: string[], options?: Options) => {
   const outputs = []
 
   for (const command of commands) {

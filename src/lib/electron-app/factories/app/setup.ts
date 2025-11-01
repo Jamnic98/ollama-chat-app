@@ -11,7 +11,7 @@ import { makeAppId } from 'shared/utils'
 
 ignoreConsoleWarnings(['Manifest version 2 is deprecated'])
 
-export async function makeAppSetup(createWindow: () => Promise<BrowserWindow>) {
+export const makeAppSetup = async (createWindow: () => Promise<BrowserWindow>) => {
   if (ENVIRONMENT.IS_DEV) {
     await installExtension([REACT_DEVELOPER_TOOLS], {
       loadExtensionOptions: {

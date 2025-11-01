@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { ChatResponse } from "preload/api/ollama";
+
+import {TypingIndicator} from 'renderer/components'
 
 const { App } = window;
 
@@ -7,15 +8,6 @@ type Message = {
   role: 'user' | 'assistant';
   content: string;
 };
-
-// Animated dots component
-const TypingIndicator = () => (
-  <div className="flex items-center gap-1 h-6">
-    <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-75"></span>
-    <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-150"></span>
-    <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce delay-300"></span>
-  </div>
-);
 
 const ChatBox = () => {
   const [input, setInput] = useState("");
@@ -32,7 +24,7 @@ const ChatBox = () => {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (loading || !input.trim()) return;
 
     const userMessage: Message = { role: 'user', content: input };
     setMessages((m) => [...m, userMessage]);
@@ -77,15 +69,15 @@ const ChatBox = () => {
       setShowTyping(false);
     } finally {
       setLoading(false);
-      setShowTyping(false); // ensure hidden if stream ends
+      setShowTyping(false);
     }
   };
 
-  const stopAssistant = () => {
-    cancelRef.current = true;
-    setLoading(false);
-    setShowTyping(false);
-  };
+  // const stopAssistant = () => {
+  //   cancelRef.current = true;
+  //   setLoading(false);
+  //   setShowTyping(false);
+  // };
 
   return (
     <div className="flex flex-col h-full w-full mx-auto p-4 bg-gray-50 rounded-xl shadow-lg">
@@ -125,14 +117,17 @@ const ChatBox = () => {
           value={input}
           autoFocus
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !loading) sendMessage();
+          }}
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           placeholder="Type your message..."
         />
 
         <button
           onClick={sendMessage}
-          className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          disabled={loading}
         >
           Send
         </button>

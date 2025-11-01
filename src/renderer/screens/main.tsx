@@ -1,9 +1,13 @@
-import {ChatBox} from "renderer/components"
+import {useState} from 'react'
 
-export function MainScreen() {
+import {ChatBox, ModelSelector} from "renderer/components"
+
+export const MainScreen = () => {
+  const [currentModel, setCurrentModel] = useState('');
 
   return (
     <main className="flex flex-col items-center justify-center h-screen bg-white">
+      <ModelSelector selectedModel={currentModel} onSelect={(model) => setCurrentModel(model)} />
       <ChatBox />
     </main>
   )

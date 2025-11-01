@@ -2,13 +2,13 @@ import semver from 'semver'
 
 import { COLORS } from '../constants/colors'
 
-export function checkValidations({
+export const checkValidations = ({
   version,
   newVersion,
 }: {
   version: string
   newVersion: string
-}) {
+}) => {
   if (!newVersion) {
     console.log(`${COLORS.RED}No version entered${COLORS.RESET}`)
 

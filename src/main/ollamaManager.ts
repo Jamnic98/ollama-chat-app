@@ -1,13 +1,32 @@
-import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
-import path from 'node:path';
+import http from 'node:http';
 import { app } from 'electron';
+import { spawn, ChildProcessWithoutNullStreams } from 'node:child_process';
+
+import { versionEndpoint } from 'shared/constants';
 
 let ollamaProcess: ChildProcessWithoutNullStreams | null = null;
 
-export function startOllama() {
-  if (ollamaProcess) return; // Already running
+const isOllamaRunning = async (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const req = http.get(versionEndpoint, (res) => {
+      resolve(res.statusCode === 200);
+    });
+    req.on('error', () => resolve(false));
+    req.end();
+  });
+}
 
-  const ollamaExecutable = 'ollama'; // or full path if needed
+export const startOllama = async () => {
+  if (ollamaProcess) return;
+
+  const alreadyRunning = await isOllamaRunning();
+  if (alreadyRunning) {
+    console.log('[Ollama] already running, skipping spawn');
+    return;
+  }
+
+  console.log('[Ollama] starting new process...');
+  const ollamaExecutable = 'ollama';
 
   ollamaProcess = spawn(ollamaExecutable, ['serve'], {
     cwd: process.cwd(),
@@ -16,22 +35,23 @@ export function startOllama() {
   });
 
   ollamaProcess.stdout.on('data', (data) => {
-    console.log(`[Ollama]: ${data.toString()}`);
+    console.log(`[Ollama]: ${data.toString().trim()}`);
   });
 
   ollamaProcess.stderr.on('data', (data) => {
-    console.error(`[Ollama ERROR]: ${data.toString()}`);
+    console.error(`[Ollama ERROR]: ${data.toString().trim()}`);
   });
 
   ollamaProcess.on('close', (code) => {
-    console.log(`Ollama process exited with code ${code}`);
+    console.log(`[Ollama] process exited with code ${code}`);
     ollamaProcess = null;
   });
 }
 
-export function stopOllama() {
+export const stopOllama = () => {
   if (!ollamaProcess) return;
 
+  console.log('[Ollama] stopping process...');
   ollamaProcess.kill('SIGTERM');
   ollamaProcess = null;
 }
