@@ -1,4 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
 
 import { TypingIndicator } from "renderer/components";
 
@@ -103,8 +107,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({ selectedModel }) => {
                   ? "bg-blue-600 text-white rounded-br-none"
                   : "bg-gray-200 text-gray-900 rounded-bl-none"
               }`}
+              style={{ userSelect: "text" }}
             >
-              {m.content}
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
+              >
+                {m.content}
+              </ReactMarkdown>
             </div>
           </div>
         ))}
