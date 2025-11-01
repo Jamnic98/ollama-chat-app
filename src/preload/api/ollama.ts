@@ -174,13 +174,10 @@ export const OllamaAPI = {
 
   pullModel: async (
     modelName: string,
-    onProgress?: (
-      percent: number,
-      layers?: { digest: string; completed: number; total: number }[]
-    ) => void
+    onProgress?: (progress: { digest: string, completed: number, total: number }) => void
   ): Promise<void> => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120_000);
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 120_000)
 
     try {
       const res = await fetch(pullModelEndpoint, {
@@ -188,84 +185,60 @@ export const OllamaAPI = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: modelName }),
         signal: controller.signal,
-      });
+      })
 
       if (!res.ok) {
-        if (res.status === 400) throw new Error(`Model "${modelName}" does not exist`);
-        let errMsg = `${res.status} ${res.statusText}`;
+        if (res.status === 400) throw new Error(`Model "${modelName}" does not exist`)
+        let errMsg = `${res.status} ${res.statusText}`
         try {
-          const json = await res.json();
-          if (json.error) errMsg = json.error;
+          const json = await res.json()
+          if (json.error) errMsg = json.error
         } catch {}
-        throw new Error(`Failed to pull model: ${errMsg}`);
+        throw new Error(`Failed to pull model: ${errMsg}`)
       }
 
-      if (!res.body) return;
+      if (!res.body) return
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let buffer = '';
-
-      const layers: { digest: string; completed: number; total: number }[] = [];
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let buffer = ''
 
       while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
+        const { value, done } = await reader.read()
+        if (done) break
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
 
         for (const line of lines) {
-          if (!line.trim()) continue;
+          if (!line.trim()) continue
           try {
-            const obj = JSON.parse(line);
-
-            // Only track lines with digest/completed/total
-            if (obj.digest && obj.completed !== undefined && obj.total !== undefined) {
-              const index = layers.findIndex(l => l.digest === obj.digest);
-              if (index >= 0) layers[index] = { digest: obj.digest, completed: obj.completed, total: obj.total };
-              else layers.push({ digest: obj.digest, completed: obj.completed, total: obj.total });
-
-              // Compute overall progress
-              const totalBytes = layers.reduce((sum, l) => sum + l.total, 0);
-              const completedBytes = layers.reduce((sum, l) => sum + l.completed, 0);
-              const percent = totalBytes ? Math.floor((completedBytes / totalBytes) * 100) : 0;
-
-              onProgress?.(percent, [...layers]); // send both percent and layers
+            const obj = JSON.parse(line)
+            // Only process if completed/total exist
+            if (obj.completed !== undefined && obj.total !== undefined && obj.digest && onProgress) {
+              onProgress({ digest: obj.digest, completed: obj.completed, total: obj.total })
             }
           } catch {}
         }
       }
 
-      // final buffer
+      // Final chunk
       if (buffer.trim()) {
         try {
-          const obj = JSON.parse(buffer);
-          if (obj.digest && obj.completed !== undefined && obj.total !== undefined) {
-            const index = layers.findIndex(l => l.digest === obj.digest);
-            if (index >= 0) {
-              layers[index] = { digest: obj.digest, completed: obj.completed, total: obj.total }
-            } else {
-              layers.push({ digest: obj.digest, completed: obj.completed, total: obj.total })
-            }
-
-            const totalBytes = layers.reduce((sum, l) => sum + l.total, 0);
-            const completedBytes = layers.reduce((sum, l) => sum + l.completed, 0);
-            const percent = totalBytes ? Math.floor((completedBytes / totalBytes) * 100) : 0;
-
-            onProgress?.(percent, [...layers]);
+          const obj = JSON.parse(buffer)
+          if (obj.completed !== undefined && obj.total !== undefined && obj.digest && onProgress) {
+            onProgress({ digest: obj.digest, completed: obj.completed, total: obj.total })
           }
         } catch {}
       }
     } catch (err: any) {
-      if (err.name === 'AbortError') throw new Error('Pull request timed out');
-      throw new Error(`Failed to pull model: ${err.message}`);
+      if (err.name === 'AbortError') throw new Error('Pull request timed out')
+      throw new Error(`Failed to pull model: ${err.message}`)
     } finally {
-      clearTimeout(timeout);
+      clearTimeout(timeout)
     }
   },
-
 
   deleteModel: async (modelName: string): Promise<void> => {
     try {

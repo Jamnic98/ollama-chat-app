@@ -31,7 +31,7 @@ const MainScreen = () => {
         {/* <hr className="my-12" /> */}
 
         {/* Chat History */}
-        {/* <h3 className="tex font-semibold mb-4 text-gray-700">Chats</h3>
+        {/* <h2 className="tex font-semibold mb-4 text-gray-700">Chats</h2>
         <div className="flex flex-col space-y-2 overflow-y-auto">
           {['Chat 1', 'Chat 2', 'Chat 3'].map((chat, i) => (
             <button

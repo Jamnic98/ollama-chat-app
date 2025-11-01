@@ -3,8 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 
 import { type OllamaModel } from 'preload/api/ollama'
-// import { BsCaretDownFill } from 'react-icons/bs'
-// import { IoClose } from 'react-icons/io5'
+import { X, ChevronDown } from 'lucide-react'
 
 const {App} = window
 
@@ -76,7 +75,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
       <div
         className={`${
           hideDropdown ? 'rounded shadow' : 'rounded-t-sm'
-        } flex  items-center justify-between bg-neutral-50 px-4 py-2`}
+        } flex items-center justify-between bg-neutral-50 px-4 py-2`}
         onClick={handleSelectClick}
       >
         <span className="text-base font-medium text-gray-950">
@@ -88,17 +87,16 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           {selectedModel && selectedModel !== defaultValue && !loading && !error && (
             <button
               onClick={handleClear}
-              className="rounded p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-900 "
+              className="rounded p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-900"
               aria-label="Clear selection"
             >
-              {/* <IoClose className="h-4 w-4" /> */}
-              x
+              <X className="h-4 w-4" />
             </button>
           )}
           {/* Dropdown icon */}
-          {/* <BsCaretDownFill
-            className={`text-gray-950 transition-transform ${hideDropdown ? '' : 'rotate-180'}`}
-          /> */}
+          <ChevronDown
+            className={`h-4 w-4 text-gray-950 transition-transform ${hideDropdown ? '' : 'rotate-180'}`}
+          />
         </div>
       </div>
 
@@ -108,17 +106,15 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
           {models.length === 0 ? (
             <div className="px-4 py-2 text-sm text-gray-500">No models found</div>
           ) : (
-            models
-              // .filter((m) => m.name !== selectedModel)
-              .map(({ name }, i) => (
-                <div
-                  key={i}
-                  onClick={() => handleOptionClick(name)}
-                  className=" px-4 py-2 hover:bg-blue-600 hover:text-white"
-                >
-                  {name}
-                </div>
-              ))
+            models.map(({ name }, i) => (
+              <div
+                key={i}
+                onClick={() => handleOptionClick(name)}
+                className="px-4 py-2 hover:bg-blue-600 hover:text-white cursor-pointer"
+              >
+                {name}
+              </div>
+            ))
           )}
         </div>
       )}
