@@ -10,8 +10,9 @@ export const PLATFORM = {
 
 // Endpoints
 const localOllamaEndpoint = "http://localhost:11434/api"
+export const pullModelEndpoint = `${localOllamaEndpoint}/pull`
 export const chatEndpoint = `${localOllamaEndpoint}/chat`
 export const generateEndpoint = `${localOllamaEndpoint}/generate`
-export const pullModelEndpoint = `${localOllamaEndpoint}/pull`
 export const listModelsEndpoint = `${localOllamaEndpoint}/tags`
 export const versionEndpoint = `${localOllamaEndpoint}/version`
+export const deleteModelEndpoint = `${localOllamaEndpoint}/delete`

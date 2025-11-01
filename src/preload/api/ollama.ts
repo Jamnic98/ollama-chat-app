@@ -1,4 +1,4 @@
-import { chatEndpoint, listModelsEndpoint } from 'shared/constants'
+import { chatEndpoint, deleteModelEndpoint, listModelsEndpoint, pullModelEndpoint } from 'shared/constants'
 
 export type Message = {
   role: 'user' | 'assistant'
@@ -169,6 +169,124 @@ export const OllamaAPI = {
       }
     } finally {
       clearTimeout(timeout);
+    }
+  },
+
+  pullModel: async (
+    modelName: string,
+    onProgress?: (
+      percent: number,
+      layers?: { digest: string; completed: number; total: number }[]
+    ) => void
+  ): Promise<void> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120_000);
+
+    try {
+      const res = await fetch(pullModelEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: modelName }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        if (res.status === 400) throw new Error(`Model "${modelName}" does not exist`);
+        let errMsg = `${res.status} ${res.statusText}`;
+        try {
+          const json = await res.json();
+          if (json.error) errMsg = json.error;
+        } catch {}
+        throw new Error(`Failed to pull model: ${errMsg}`);
+      }
+
+      if (!res.body) return;
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+
+      const layers: { digest: string; completed: number; total: number }[] = [];
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const obj = JSON.parse(line);
+
+            // Only track lines with digest/completed/total
+            if (obj.digest && obj.completed !== undefined && obj.total !== undefined) {
+              const index = layers.findIndex(l => l.digest === obj.digest);
+              if (index >= 0) layers[index] = { digest: obj.digest, completed: obj.completed, total: obj.total };
+              else layers.push({ digest: obj.digest, completed: obj.completed, total: obj.total });
+
+              // Compute overall progress
+              const totalBytes = layers.reduce((sum, l) => sum + l.total, 0);
+              const completedBytes = layers.reduce((sum, l) => sum + l.completed, 0);
+              const percent = totalBytes ? Math.floor((completedBytes / totalBytes) * 100) : 0;
+
+              onProgress?.(percent, [...layers]); // send both percent and layers
+            }
+          } catch {}
+        }
+      }
+
+      // final buffer
+      if (buffer.trim()) {
+        try {
+          const obj = JSON.parse(buffer);
+          if (obj.digest && obj.completed !== undefined && obj.total !== undefined) {
+            const index = layers.findIndex(l => l.digest === obj.digest);
+            if (index >= 0) {
+              layers[index] = { digest: obj.digest, completed: obj.completed, total: obj.total }
+            } else {
+              layers.push({ digest: obj.digest, completed: obj.completed, total: obj.total })
+            }
+
+            const totalBytes = layers.reduce((sum, l) => sum + l.total, 0);
+            const completedBytes = layers.reduce((sum, l) => sum + l.completed, 0);
+            const percent = totalBytes ? Math.floor((completedBytes / totalBytes) * 100) : 0;
+
+            onProgress?.(percent, [...layers]);
+          }
+        } catch {}
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') throw new Error('Pull request timed out');
+      throw new Error(`Failed to pull model: ${err.message}`);
+    } finally {
+      clearTimeout(timeout);
+    }
+  },
+
+
+  deleteModel: async (modelName: string): Promise<void> => {
+    try {
+      const res = await fetch(deleteModelEndpoint, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: modelName }),
+      })
+
+      if (!res.ok) {
+        let errMsg = `${res.status} ${res.statusText}`
+        try {
+          const json = await res.json()
+          if (json.error) errMsg = json.error
+        } catch {
+          // ignore parse errors
+        }
+        throw new Error(`Failed to delete model: ${errMsg}`)
+      }
+    } catch (err: any) {
+      throw new Error(`Delete request failed: ${err.message}`)
     }
   },
 }
