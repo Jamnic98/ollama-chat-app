@@ -1,7 +1,9 @@
-import { MoveLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { OllamaModel } from '~/src/preload/api/ollama'
+import { MoveLeft, Star, StarOff } from 'lucide-react'
+
+import { OllamaModel } from 'preload/api/ollama'
+import { getFavourites, toggleFavourite } from 'shared/utils'
 
 const { App } = window
 
@@ -13,6 +15,7 @@ const ModelScreen = () => {
   const [layers, setLayers] = useState<{ digest: string; completed: number; total: number }[]>([])
   const [overallProgress, setOverallProgress] = useState(0)
   const [alert, setAlert] = useState<{ type: 'error' | 'info'; message: string } | null>(null)
+  const [favourites, setFavourites] = useState<string[]>(getFavourites())
 
   const fetchModels = async () => {
     try {
@@ -26,6 +29,11 @@ const ModelScreen = () => {
   useEffect(() => {
     fetchModels()
   }, [])
+
+  const handleToggleFavourite = (name: string) => {
+    const updated = toggleFavourite(name)
+    setFavourites(updated)
+  }
 
   // Recompute overall progress
   useEffect(() => {
@@ -158,22 +166,41 @@ const ModelScreen = () => {
       {models.length > 0 && <div className="border-t pt-4">
         <h2 className="text-lg font-semibold mb-2">Available Models</h2>
         <div className="flex flex-col gap-2">
-          {models.map(model => (
-            <div key={model.name} className="flex justify-between items-center p-2 border rounded bg-gray-50">
-              <div>
-                <p className="font-medium">{model.name}</p>
-                <p className="text-xs text-gray-500">{model.details.parameter_size} params • {model.details.quantization_level}</p>
+         {models.map(model => {
+            const isFavourite = favourites.includes(model.name)
+            return (
+              <div
+                key={model.name}
+                className="flex justify-between items-center p-2 border rounded bg-gray-50"
+              >
+                <div className="flex items-center gap-2">
+                  {/* Favourite star */}
+                  <button
+                    onClick={() => handleToggleFavourite(model.name)}
+                    className="text-yellow-500 hover:scale-110 transition-transform"
+                    title={isFavourite ? 'Remove from favourites' : 'Add to favourites'}
+                  >
+                    {isFavourite ? <Star fill="currentColor" /> : <StarOff />}
+                  </button>
+                  <div>
+                    <p className="font-medium">{model.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {model.details.parameter_size} params • {model.details.quantization_level}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    className="px-2 py-1 bg-red-400 text-white rounded text-sm"
+                    onClick={() => handleDeleteModel(model.name)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  className="px-2 py-1 bg-red-400 text-white rounded text-sm"
-                  onClick={() => handleDeleteModel(model.name)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>}
     </div>

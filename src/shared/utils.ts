@@ -13,3 +13,25 @@ const appId = `com.${authorInKebabCase}.${name}`.toLowerCase()
  * // => 'com.example.app'
  */
 export const makeAppId = (id: string = appId): string => id
+
+export const getFavourites = (): string[] => {
+  try {
+    const saved = localStorage.getItem('favourites')
+    return saved ? JSON.parse(saved) : []
+  } catch {
+    return []
+  }
+}
+
+export const setFavourites = (favs: string[]) => {
+  localStorage.setItem('favourites', JSON.stringify(favs))
+}
+
+export const toggleFavourite = (name: string) => {
+  const favs = getFavourites()
+  const updated = favs.includes(name)
+    ? favs.filter((f) => f !== name)
+    : [...favs, name]
+  setFavourites(updated)
+  return updated
+}

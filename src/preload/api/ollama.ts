@@ -177,7 +177,7 @@ export const OllamaAPI = {
     onProgress?: (progress: { digest: string, completed: number, total: number }) => void
   ): Promise<void> => {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 120_000)
+    const timeout = setTimeout(() => controller.abort(), 60 * 60 * 1000)
 
     try {
       const res = await fetch(pullModelEndpoint, {
